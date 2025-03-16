@@ -1,0 +1,8 @@
+numpy>=1.19.0
+gym==0.26.0
+matplotlib>=3.3.0
+torch>=1.9.0
+pyglet==2.0.0  # For rendering in gym
+cloudpickle>=2.0.0  # Dependency for gym
+moviepy>=1.0.3  # For video recording
+ipython>=7.0.0  # For displaying videos in notebook
