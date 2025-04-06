@@ -20,4 +20,5 @@ rival(Y, C) :-
     competitor(Y, C).
 
 % Query
+% ?- [ 'absolute path' ].
 % ?- unethical(stevey).
