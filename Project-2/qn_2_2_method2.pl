@@ -8,7 +8,6 @@ parent(queen_elizabeth, prince_andrew).
 parent(queen_elizabeth, prince_edward).
 
 % Facts: Gender definitions
-% (These remain in case they are needed for other queries.)
 male(prince_charles).
 male(prince_andrew).
 male(prince_edward).
@@ -21,23 +20,22 @@ birth_order(princess_ann, 2).
 birth_order(prince_andrew, 3).
 birth_order(prince_edward, 4).
 
-% Life Status
-% For example, to declare Prince Andrew as deceased, you would uncomment the line below:
-% dead(prince_andrew).
-%
-% If no fact for dead/1 exists, then \+ dead(X) succeeds.
+% Life Status: A child is alive if not marked as dead.
+% For example, to declare Prince Andrew as deceased, you would uncomment the line below: 
+% dead(prince_andrew). 
+% If no fact for dead/1 exists, then \+ dead(X) succeeds. 
 alive(X) :-
-  \+ dead(X).
+    \+ dead(X).
 
-% Eligible Succession Members
-% Only living children of a given Parent are considered in the succession.
+% Eligible Succession Members:
+% Only living children of the specified parent are considered.
 succession_member(Parent, Child) :-
     parent(Parent, Child),
     alive(Child).
 
-% Old Succession Rule (for reference)
-% Males inherit first, then females (ordered by birth order).
-old_succession_rule(Parent, Succession) :-
+% Old Succession Rule:
+% Males inherit first (ordered by birth order), then females.
+old_succession_rule(Parent) :-
     % Collect all living male heirs with their birth order as Key-Value pairs.
     findall(Order-Child,
             ( succession_member(Parent, Child),
@@ -50,18 +48,19 @@ old_succession_rule(Parent, Succession) :-
               birth_order(Child, Order),
               female(Child) ),
             FemalePairs),
-    % Sort each group by the numeric birth order.
+    % Sort each group by birth order.
     keysort(MalePairs, SortedMalePairs),
     keysort(FemalePairs, SortedFemalePairs),
     % Extract the children from the sorted pairs.
     extract_children(SortedMalePairs, SortedMales),
     extract_children(SortedFemalePairs, SortedFemales),
     % Append the male heirs first, then female heirs.
-    append(SortedMales, SortedFemales, Succession).
+    append(SortedMales, SortedFemales, Succession),
+    format('Old succession order: ~w~n', [Succession]).
 
 % New Succession Rule:
 % The throne is passed solely according to the order of birth, irrespective of gender.
-new_succession_rule(Parent, Succession) :-
+new_succession_rule(Parent) :-
     % Collect all living children with their birth order as Key-Value pairs.
     findall(Order-Child,
             ( succession_member(Parent, Child),
@@ -70,21 +69,24 @@ new_succession_rule(Parent, Succession) :-
     % Sort the list by birth order.
     keysort(Pairs, SortedPairs),
     % Extract the children from the sorted pairs.
-    extract_children(SortedPairs, Succession).
+    extract_children(SortedPairs, Succession),
+    format('New succession order: ~w~n', [Succession]).
 
-% Helper predicate: extract the children (values) from a list of Key-Value pairs.
+% Helper predicate: Extract the children (values) from a list of Key-Value pairs.
 extract_children([], []).
 extract_children([_-Child|RestPairs], [Child|RestChildren]) :-
     extract_children(RestPairs, RestChildren).
 
-% Example Queries:
-% 1. To get the old line of succession for Queen Elizabeth:
-%    ?- old_succession_rule(queen_elizabeth, Succession).
-%
-% 2. To simulate a death during runtime (e.g., Prince Andrew dies):
-%    ?- assert(dead(prince_andrew)).
-%
-%    Then the respective line of succession predicates will exclude Prince Andrew.
-%
-% 3. To get the new line of succession (by birth order irrespective of gender):
-%    ?- new_succession_rule(queen_elizabeth, NewSuccession).
+/* 
+Example Queries:
+
+1. To get the old line of succession for Queen Elizabeth:
+   ?- old_succession_rule(queen_elizabeth).
+
+2. To simulate a death during runtime (e.g., Prince Andrew dies):
+   ?- assert(dead(prince_andrew)).
+   Then the respective succession rule will exclude Prince Andrew.
+
+3. To get the new line of succession (by birth order irrespective of gender):
+   ?- new_succession_rule(queen_elizabeth).
+*/
